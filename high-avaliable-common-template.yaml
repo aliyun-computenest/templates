@@ -1,0 +1,612 @@
+ROSTemplateFormatVersion: "2015-09-01"
+Parameters:
+  PayType:
+    Type: String
+    Label:
+      en: ECS Instance Charge Type
+      zh-cn: 付费类型
+    AssociationProperty: ChargeType
+    AssociationPropertyMetadata:
+      LocaleKey: InstanceChargeType
+    Default: PostPaid
+    AllowedValues:
+      - PostPaid
+      - PrePaid
+  PayPeriodUnit:
+    Type: String
+    Label:
+      en: Pay Period Unit
+      zh-cn: 购买资源时长周期
+    Description:
+      en: The long cycle of purchasing resources. <br>Week is a Week and Month is
+        a Month. <br> The default value is month.<br><b><font color='red'> When ECS
+        instance types are PrePaid valid </b></font>
+      zh-cn: 购买资源时长的周期。<br>Week为周，Month为月<br>默认值为月<br><b><font color='red'>当ECS实例类型为PrePaid有效</b></font>
+    AssociationProperty: PayPeriodUnit
+    AssociationPropertyMetadata:
+      Visible:
+        Condition:
+          Fn::Not:
+            Fn::Equals:
+              - ${PayType}
+              - PostPaid
+    Default: Month
+    AllowedValues:
+      - Month
+      - Year
+  PayPeriod:
+    Type: Number
+    Label:
+      en: Period
+      zh-cn: 购买资源时长
+    AssociationProperty: PayPeriod
+    AssociationPropertyMetadata:
+      Visible:
+        Condition:
+          Fn::Not:
+            Fn::Equals:
+              - ${PayType}
+              - PostPaid
+    Default: 1
+    AllowedValues:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+      - 7
+      - 8
+      - 9
+  ZoneNumber:
+    Type: Number
+    Label:
+      zh-cn: 可用区数量
+      en: Zone Number
+    MaxValue: 3
+    MinValue: 1
+    Default: 1
+  VpcId:
+    Type: String
+    Label:
+      en: VPC ID
+      zh-cn: VPC ID
+    AssociationProperty: ALIYUN::ECS::VPC::VPCId
+  EcsInstanceType:
+    Type: String
+    Label:
+      en: Instance Type
+      zh-cn: 实例类型
+    AssociationProperty: ALIYUN::ECS::Instance::InstanceType
+    AssociationPropertyMetadata:
+      ZoneIds: ${ZoneId1}
+      InstanceChargeType: ${InstanceChargeType}
+  ZoneId1:
+    Type: String
+    Label:
+      en: VSwitch Availability Zone1
+      zh-cn: 交换机可用区1
+    AssociationProperty: ALIYUN::ECS::Instance::ZoneId
+  ZoneId2:
+    Type: String
+    Label:
+      en: VSwitch Availability Zone2
+      zh-cn: 交换机可用区2
+    Default: ''
+    AssociationProperty: ALIYUN::ECS::Instance::ZoneId
+    AssociationPropertyMetadata:
+      Visible:
+        Condition:
+          Fn::Or:
+            - Fn::Equals:
+                - ${ZoneNumber}
+                - 2
+            - Fn::Equals:
+                - ${ZoneNumber}
+                - 3
+  ZoneId3:
+    Type: String
+    Label:
+      en: VSwitch Availability ZoneId3
+      zh-cn: 交换机可用区3
+    Default: ''
+    AssociationProperty: ALIYUN::ECS::Instance::ZoneId
+    AssociationPropertyMetadata:
+      Visible:
+        Condition:
+          Fn::Equals:
+            - ${ZoneNumber}
+            - 3
+  EcsNumberPerZone:
+    Type: Number
+    Label:
+      zh-cn: 每个可用区ECS服务实例数量
+      en: ECS Number Of Each Zone
+    MinValue: 1
+  VSwitchId1:
+    Type: String
+    Label:
+      zh-cn: 可用区1交换机实例ID
+      en: VSwitch ID Of Zone1
+    AssociationProperty: ALIYUN::ECS::VSwitch::VSwitchId
+    AssociationPropertyMetadata:
+      VpcId: ${VpcId}
+      ZoneId: ${ZoneId1}
+  VSwitchId2:
+    Type: String
+    Label:
+      zh-cn: 可用区2交换机实例ID
+      en: VSwitch ID Of Zone2
+    Default: ''
+    AssociationProperty: ALIYUN::ECS::VSwitch::VSwitchId
+    AssociationPropertyMetadata:
+      Visible:
+        Condition:
+          Fn::Or:
+            - Fn::Equals:
+                - ${ZoneNumber}
+                - 2
+            - Fn::Equals:
+                - ${ZoneNumber}
+                - 3
+      VpcId: ${VpcId}
+      ZoneId: ${ZoneId2}
+  VSwitchId3:
+    Type: String
+    Label:
+      zh-cn: 可用区3交换机实例ID
+      en: VSwitch ID Of Zone3
+    Default: ''
+    AssociationProperty: ALIYUN::ECS::VSwitch::VSwitchId
+    AssociationPropertyMetadata:
+      Visible:
+        Condition:
+          Fn::Equals:
+            - ${ZoneNumber}
+            - 3
+      VpcId: ${VpcId}
+      ZoneId: ${ZoneId3}
+  InternetChargeType:
+    Default: PayByTraffic
+    Type: String
+    Label:
+      zh-cn: 流量付费类型
+      en: Internet Charge Type
+    AllowedValues:
+      - PayByBandwidth
+      - PayByTraffic
+  InternetMaxBandwidthOut:
+    Default: 0
+    Type: Number
+    Label:
+      zh-cn: 流量公网带宽
+      en: Internet Max Bandwidth Out
+    MinValue: 0
+    MaxValue: 100
+    Description:
+      zh-cn: 取值范围0-100, 0为不开公网ip
+      en: no public ip if zero
+  InstancePassword:
+    NoEcho: true
+    Type: String
+    Description:
+      en: Server login password, Length 8-30, must contain three(Capital letters, lowercase letters, numbers, ()`~!@#$%^&*_-+=|{}[]:;'<>,.?/ Special symbol in)
+      zh-cn: 服务器登录密码,长度8-30，必须包含三项（大写字母、小写字母、数字、 ()`~!@#$%^&*_-+=|{}[]:;'<>,.?/ 中的特殊符号）
+    AllowedPattern: '[0-9A-Za-z\_\-\&:;''<>,=%`~!@#\(\)\$\^\*\+\|\{\}\[\]\.\?\/]+$'
+    Label:
+      en: Instance Password
+      zh-cn: 实例密码
+    ConstraintDescription:
+      en: Length 8-30, must contain three(Capital letters, lowercase letters, numbers, ()`~!@#$%^&*_-+=|{}[]:;'<>,.?/ Special symbol in)
+      zh-cn: 长度8-30，必须包含三项（大写字母、小写字母、数字、 ()`~!@#$%^&*_-+=|{}[]:;'<>,.?/ 中的特殊符号）
+    MinLength: 8
+    MaxLength: 30
+    AssociationProperty: ALIYUN::ECS::Instance::Password
+  SecurityGroupId:
+    Type: String
+    AssociationProperty: ALIYUN::ECS::SecurityGroup::SecurityGroupId
+    AssociationPropertyMetadata:
+      VpcId: ${VpcId}
+    Default: ''
+    Description:
+      en: Please search the business security group ID starting with(sg-xxx)from console-ECS-Network & Security
+      zh-cn: 现有业务安全组的实例ID
+    Label:
+      en: Business Security Group ID
+      zh-cn: 业务安全组ID
+  DataDiskSize:
+    Type: Number
+    Default: 0
+    MaxValue: 100
+    MinValue: 0
+    Description:
+      en: Data disk size. The size must smaller than 100, unit： GB
+      zh-cn: 数据盘大小，最大值100，单位GB
+    Label:
+      en: Data Disk Size
+      zh-cn: 数据盘大小
+  DataDiskCategory:
+    Type: String
+    AllowedValues:
+      - cloud_efficiency
+      - cloud_ssd
+      - cloud_essd
+    Default: cloud_efficiency
+    Label:
+      en: Disk Type
+      zh-cn: 数据盘类型
+  InstanceImageId:
+    Type: String
+    Default: centos_7
+    Description:
+      zh-cn: 镜像ID
+      en: Image ID
+    Label:
+      zh-cn: 镜像
+      en: Image
+  UserData:
+    Type: String
+    Default: 'echo "user data"'
+    Description:
+      en: The user data passed when creating an ECS instance
+      zh-cn: 创建ECS实例时传入的用户数据
+    Label:
+      en: User Data
+      zh-cn: 用户数据
+Metadata:
+  ALIYUN::ROS::Interface:
+    ParameterGroups:
+      - Parameters:
+          - PayType
+          - PayPeriodUnit
+          - PayPeriod
+        Label:
+          default:
+            en: PayType Configuration
+            zh-cn: 付费类型配置
+      - Parameters:
+          - VpcId
+        Label:
+          default:
+            en: VPC Configuration
+            zh-cn: VPC配置
+      - Parameters:
+          - SecurityGroupId
+        Label:
+          default:
+            en: Security Group Configuration
+            zh-cn: 安全组配置
+      - Parameters:
+          - EcsNumberPerZone
+          - DataDiskSize
+          - DataDiskCategory
+          - InstanceImageId
+          - EcsInstanceType
+          - UserData
+        Label:
+          default:
+            en: Ecs Configuration
+            zh-cn: Ecs配置
+      - Parameters:
+          - ZoneNumber
+          - ZoneId1
+          - ZoneId2
+          - ZoneId3
+          - VSwitchId1
+          - VSwitchId2
+          - VSwitchId3
+        Label:
+          default:
+            en: Zone And VSwitch Configuration
+            zh-cn: 可用区和交换机配置
+      - Parameters:
+          - InternetChargeType
+          - InternetMaxBandwidthOut
+          - InstancePassword
+        Label:
+          default:
+            en: Internet Configuration
+            zh-cn: 网络机配置
+Conditions:
+  IfCreateDataDisk:
+    Fn::Not:
+      Fn::Equals:
+        - Ref: DataDiskSize
+        - 0
+  IfHaveThreeNumber:
+    Fn::Equals:
+      - Ref: ZoneNumber
+      - 3
+  IfHaveTwoNumber:
+    Fn::Or:
+      - Fn::Equals:
+          - Ref: ZoneNumber
+          - 3
+      - Fn::Equals:
+          - Ref: ZoneNumber
+          - 2
+Resources:
+  EcsInstanceGroup1:
+    Type: ALIYUN::ECS::InstanceGroup
+    Properties:
+      SecurityGroupId:
+        Ref: SecurityGroupId
+      InstanceName:
+        Fn::Join:
+          - '-'
+          - - Ref: ALIYUN::StackName
+            - 1
+      IoOptimized: optimized
+      InstanceChargeType:
+        Ref: PayType
+      PeriodUnit:
+        Ref: PayPeriodUnit
+      Period:
+        Ref: PayPeriod
+      VpcId:
+        Ref: VpcId
+      VSwitchId:
+        Ref: VSwitchId1
+      MaxAmount:
+        Ref: EcsNumberPerZone
+      ImageId:
+        Ref: InstanceImageId
+      InstanceType:
+        Ref: EcsInstanceType
+      Password:
+        Ref: InstancePassword
+      InternetChargeType:
+        Ref: InternetChargeType
+      InternetMaxBandwidthOut:
+        Ref: InternetMaxBandwidthOut
+      ZoneId:
+        Ref: ZoneId1
+      DiskMappings:
+        Fn::If:
+          - IfCreateDataDisk
+          - - Category:
+                Ref: DataDiskCategory
+              Size:
+                Ref: DataDiskSize
+          - Ref: ALIYUN::NoValue
+      UserData:
+        Ref: UserData
+  EcsInstanceGroup2:
+    Type: ALIYUN::ECS::InstanceGroup
+    Condition:
+      IfHaveTwoNumber
+    Properties:
+      SecurityGroupId:
+        Ref: SecurityGroupId
+      InstanceName:
+        Fn::Join:
+          - '-'
+          - - Ref: ALIYUN::StackName
+            - 2
+      IoOptimized: optimized
+      InstanceChargeType:
+        Ref: PayType
+      PeriodUnit:
+        Ref: PayPeriodUnit
+      Period:
+        Ref: PayPeriod
+      VpcId:
+        Ref: VpcId
+      VSwitchId:
+        Ref: VSwitchId2
+      MaxAmount:
+        Ref: EcsNumberPerZone
+      ImageId:
+        Ref: InstanceImageId
+      InstanceType:
+        Ref: EcsInstanceType
+      Password:
+        Ref: InstancePassword
+      InternetChargeType:
+        Ref: InternetChargeType
+      InternetMaxBandwidthOut:
+        Ref: InternetMaxBandwidthOut
+      ZoneId:
+        Ref: ZoneId2
+      DiskMappings:
+        Fn::If:
+          - IfCreateDataDisk
+          - - Category:
+                Ref: DataDiskCategory
+              Size:
+                Ref: DataDiskSize
+          - Ref: ALIYUN::NoValue
+      UserData:
+        Ref: UserData
+  EcsInstanceGroup3:
+    Type: ALIYUN::ECS::InstanceGroup
+    Condition:
+      IfHaveThreeNumber
+    Properties:
+      SecurityGroupId:
+        Ref: SecurityGroupId
+      InstanceName:
+        Fn::Join:
+          - '-'
+          - - Ref: ALIYUN::StackName
+            - 3
+      IoOptimized: optimized
+      InstanceChargeType:
+        Ref: PayType
+      PeriodUnit:
+        Ref: PayPeriodUnit
+      Period:
+        Ref: PayPeriod
+      VpcId:
+        Ref: VpcId
+      VSwitchId:
+        Ref: VSwitchId3
+      MaxAmount:
+        Ref: EcsNumberPerZone
+      ImageId:
+        Ref: InstanceImageId
+      InstanceType:
+        Ref: EcsInstanceType
+      Password:
+        Ref: InstancePassword
+      InternetChargeType:
+        Ref: InternetChargeType
+      InternetMaxBandwidthOut:
+        Ref: InternetMaxBandwidthOut
+      ZoneId:
+        Ref: ZoneId3
+      DiskMappings:
+        Fn::If:
+          - IfCreateDataDisk
+          - - Category:
+                Ref: DataDiskCategory
+              Size:
+                Ref: DataDiskSize
+          - Ref: ALIYUN::NoValue
+      UserData:
+        Ref: UserData
+Outputs:
+  InstanceIds:
+    Value:
+      Fn::ListMerge:
+        - Fn::GetAtt:
+            - EcsInstanceGroup1
+            - InstanceIds
+        - Fn::If:
+            - IfHaveTwoNumber
+            - Fn::GetAtt:
+                - EcsInstanceGroup2
+                - InstanceIds
+            - []
+        - Fn::If:
+            - IfHaveThreeNumber
+            - Fn::GetAtt:
+                - EcsInstanceGroup3
+                - InstanceIds
+            - []
+  PrivateIps:
+    Value:
+      Fn::ListMerge:
+        - Fn::GetAtt:
+            - EcsInstanceGroup1
+            - PrivateIps
+        - Fn::If:
+            - IfHaveTwoNumber
+            - Fn::GetAtt:
+                - EcsInstanceGroup2
+                - PrivateIps
+            - []
+        - Fn::If:
+            - IfHaveThreeNumber
+            - Fn::GetAtt:
+                - EcsInstanceGroup3
+                - PrivateIps
+            - []
+  InnerIps:
+    Value:
+      Fn::ListMerge:
+        - Fn::GetAtt:
+            - EcsInstanceGroup1
+            - InnerIps
+        - Fn::If:
+            - IfHaveTwoNumber
+            - Fn::GetAtt:
+                - EcsInstanceGroup2
+                - InnerIps
+            - []
+        - Fn::If:
+            - IfHaveThreeNumber
+            - Fn::GetAtt:
+                - EcsInstanceGroup3
+                - InnerIps
+            - []
+  PublicIps:
+    Value:
+      Fn::ListMerge:
+        - Fn::GetAtt:
+            - EcsInstanceGroup1
+            - PublicIps
+        - Fn::If:
+            - IfHaveTwoNumber
+            - Fn::GetAtt:
+                - EcsInstanceGroup2
+                - PublicIps
+            - []
+        - Fn::If:
+            - IfHaveThreeNumber
+            - Fn::GetAtt:
+                - EcsInstanceGroup3
+                - PublicIps
+            - []
+  HostNames:
+    Value:
+      Fn::ListMerge:
+        - Fn::GetAtt:
+            - EcsInstanceGroup1
+            - HostNames
+        - Fn::If:
+            - IfHaveTwoNumber
+            - Fn::GetAtt:
+                - EcsInstanceGroup2
+                - HostNames
+            - []
+        - Fn::If:
+            - IfHaveThreeNumber
+            - Fn::GetAtt:
+                - EcsInstanceGroup3
+                - HostNames
+            - []
+  ZoneIds:
+    Value:
+      Fn::ListMerge:
+        - Fn::GetAtt:
+            - EcsInstanceGroup1
+            - ZoneIds
+        - Fn::If:
+            - IfHaveTwoNumber
+            - Fn::GetAtt:
+                - EcsInstanceGroup2
+                - ZoneIds
+            - []
+        - Fn::If:
+            - IfHaveThreeNumber
+            - Fn::GetAtt:
+                - EcsInstanceGroup3
+                - ZoneIds
+            - []
+  Ipv6AddressIds:
+    Value:
+      Fn::ListMerge:
+        - Fn::GetAtt:
+            - EcsInstanceGroup1
+            - Ipv6AddressIds
+        - Fn::If:
+            - IfHaveTwoNumber
+            - Fn::GetAtt:
+                - EcsInstanceGroup2
+                - Ipv6AddressIds
+            - []
+        - Fn::If:
+            - IfHaveThreeNumber
+            - Fn::GetAtt:
+                - EcsInstanceGroup3
+                - Ipv6AddressIds
+            - []
+  Ipv6Addresses:
+    Value:
+      Fn::ListMerge:
+        - Fn::GetAtt:
+            - EcsInstanceGroup1
+            - Ipv6Addresses
+        - Fn::If:
+            - IfHaveTwoNumber
+            - Fn::GetAtt:
+                - EcsInstanceGroup2
+                - Ipv6Addresses
+            - []
+        - Fn::If:
+            - IfHaveThreeNumber
+            - Fn::GetAtt:
+                - EcsInstanceGroup3
+                - Ipv6Addresses
+            - []
