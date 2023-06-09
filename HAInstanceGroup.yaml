@@ -17,11 +17,6 @@ Parameters:
     Label:
       en: Pay Period Unit
       zh-cn: 购买资源时长周期
-    Description:
-      en: The long cycle of purchasing resources. <br>Week is a Week and Month is
-        a Month. <br> The default value is month.<br><b><font color='red'> When ECS
-        instance types are PrePaid valid </b></font>
-      zh-cn: 购买资源时长的周期。<br>Week为周，Month为月<br>默认值为月<br><b><font color='red'>当ECS实例类型为PrePaid有效</b></font>
     AssociationProperty: PayPeriodUnit
     AssociationPropertyMetadata:
       Visible:
@@ -308,16 +303,16 @@ Metadata:
             en: Internet Configuration
             zh-cn: 网络机配置
 Conditions:
-  IfCreateDataDisk:
+  CreateDataDisk:
     Fn::Not:
       Fn::Equals:
         - Ref: DataDiskSize
         - 0
-  IfHaveThreeNumber:
+  CreateThirdZoneEcsGroup:
     Fn::Equals:
       - Ref: ZoneNumber
       - 3
-  IfHaveTwoNumber:
+  CreateSecondZoneEcsGroup:
     Fn::Or:
       - Fn::Equals:
           - Ref: ZoneNumber
@@ -363,7 +358,7 @@ Resources:
         Ref: ZoneId1
       DiskMappings:
         Fn::If:
-          - IfCreateDataDisk
+          - CreateDataDisk
           - - Category:
                 Ref: DataDiskCategory
               Size:
@@ -374,7 +369,7 @@ Resources:
   EcsInstanceGroup2:
     Type: ALIYUN::ECS::InstanceGroup
     Condition:
-      IfHaveTwoNumber
+      CreateSecondZoneEcsGroup
     Properties:
       SecurityGroupId:
         Ref: SecurityGroupId
@@ -410,7 +405,7 @@ Resources:
         Ref: ZoneId2
       DiskMappings:
         Fn::If:
-          - IfCreateDataDisk
+          - CreateDataDisk
           - - Category:
                 Ref: DataDiskCategory
               Size:
@@ -421,7 +416,7 @@ Resources:
   EcsInstanceGroup3:
     Type: ALIYUN::ECS::InstanceGroup
     Condition:
-      IfHaveThreeNumber
+      CreateThirdZoneEcsGroup
     Properties:
       SecurityGroupId:
         Ref: SecurityGroupId
@@ -457,7 +452,7 @@ Resources:
         Ref: ZoneId3
       DiskMappings:
         Fn::If:
-          - IfCreateDataDisk
+          - CreateDataDisk
           - - Category:
                 Ref: DataDiskCategory
               Size:
@@ -473,13 +468,13 @@ Outputs:
             - EcsInstanceGroup1
             - InstanceIds
         - Fn::If:
-            - IfHaveTwoNumber
+            - CreateSecondZoneEcsGroup
             - Fn::GetAtt:
                 - EcsInstanceGroup2
                 - InstanceIds
             - []
         - Fn::If:
-            - IfHaveThreeNumber
+            - CreateThirdZoneEcsGroup
             - Fn::GetAtt:
                 - EcsInstanceGroup3
                 - InstanceIds
@@ -491,13 +486,13 @@ Outputs:
             - EcsInstanceGroup1
             - PrivateIps
         - Fn::If:
-            - IfHaveTwoNumber
+            - CreateSecondZoneEcsGroup
             - Fn::GetAtt:
                 - EcsInstanceGroup2
                 - PrivateIps
             - []
         - Fn::If:
-            - IfHaveThreeNumber
+            - CreateThirdZoneEcsGroup
             - Fn::GetAtt:
                 - EcsInstanceGroup3
                 - PrivateIps
@@ -509,13 +504,13 @@ Outputs:
             - EcsInstanceGroup1
             - InnerIps
         - Fn::If:
-            - IfHaveTwoNumber
+            - CreateSecondZoneEcsGroup
             - Fn::GetAtt:
                 - EcsInstanceGroup2
                 - InnerIps
             - []
         - Fn::If:
-            - IfHaveThreeNumber
+            - CreateThirdZoneEcsGroup
             - Fn::GetAtt:
                 - EcsInstanceGroup3
                 - InnerIps
@@ -527,13 +522,13 @@ Outputs:
             - EcsInstanceGroup1
             - PublicIps
         - Fn::If:
-            - IfHaveTwoNumber
+            - CreateSecondZoneEcsGroup
             - Fn::GetAtt:
                 - EcsInstanceGroup2
                 - PublicIps
             - []
         - Fn::If:
-            - IfHaveThreeNumber
+            - CreateThirdZoneEcsGroup
             - Fn::GetAtt:
                 - EcsInstanceGroup3
                 - PublicIps
@@ -545,13 +540,13 @@ Outputs:
             - EcsInstanceGroup1
             - HostNames
         - Fn::If:
-            - IfHaveTwoNumber
+            - CreateSecondZoneEcsGroup
             - Fn::GetAtt:
                 - EcsInstanceGroup2
                 - HostNames
             - []
         - Fn::If:
-            - IfHaveThreeNumber
+            - CreateThirdZoneEcsGroup
             - Fn::GetAtt:
                 - EcsInstanceGroup3
                 - HostNames
@@ -563,13 +558,13 @@ Outputs:
             - EcsInstanceGroup1
             - ZoneIds
         - Fn::If:
-            - IfHaveTwoNumber
+            - CreateSecondZoneEcsGroup
             - Fn::GetAtt:
                 - EcsInstanceGroup2
                 - ZoneIds
             - []
         - Fn::If:
-            - IfHaveThreeNumber
+            - CreateThirdZoneEcsGroup
             - Fn::GetAtt:
                 - EcsInstanceGroup3
                 - ZoneIds
@@ -581,13 +576,13 @@ Outputs:
             - EcsInstanceGroup1
             - Ipv6AddressIds
         - Fn::If:
-            - IfHaveTwoNumber
+            - CreateSecondZoneEcsGroup
             - Fn::GetAtt:
                 - EcsInstanceGroup2
                 - Ipv6AddressIds
             - []
         - Fn::If:
-            - IfHaveThreeNumber
+            - CreateThirdZoneEcsGroup
             - Fn::GetAtt:
                 - EcsInstanceGroup3
                 - Ipv6AddressIds
@@ -599,13 +594,13 @@ Outputs:
             - EcsInstanceGroup1
             - Ipv6Addresses
         - Fn::If:
-            - IfHaveTwoNumber
+            - CreateSecondZoneEcsGroup
             - Fn::GetAtt:
                 - EcsInstanceGroup2
                 - Ipv6Addresses
             - []
         - Fn::If:
-            - IfHaveThreeNumber
+            - CreateThirdZoneEcsGroup
             - Fn::GetAtt:
                 - EcsInstanceGroup3
                 - Ipv6Addresses
